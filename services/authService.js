@@ -36,9 +36,9 @@ const registerUser = async (email, password) => {
 const sendVerificationEmail = async (email, token) => {
   const transporter = createTransporter();
   
-  // Use localhost for development, BASE_URL for production
+  // Use production URL for Render, localhost for development
   const baseUrl = process.env.NODE_ENV === 'production' 
-    ? BASE_URL 
+    ? 'https://examcraft-ai-backend.onrender.com'
     : 'http://localhost:3000';
   
   const verifyUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
@@ -113,9 +113,9 @@ const forgotPassword = async (email) => {
 const sendPasswordResetEmail = async (email, token) => {
   const transporter = createTransporter();
   
-  // Use localhost for development, BASE_URL for production
+  // Use production URL for Render, localhost for development
   const baseUrl = process.env.NODE_ENV === 'production' 
-    ? BASE_URL 
+    ? 'https://examcraft-ai-backend.onrender.com'
     : 'http://localhost:3000';
   
   const resetUrl = `${baseUrl}/api/auth/reset-password?token=${token}`;
