@@ -1,24 +1,60 @@
 const axios = require('axios');
 const { GEMINI_API_KEY } = require('../config/env');
 
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+// Check if API key is configured
+if (!GEMINI_API_KEY) {
+  console.error('❌ GEMINI_API_KEY is not set in environment variables!');
+}
+
+// Using gemini-2.5-flash (confirmed available via list-gemini-models.js)
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 // Call Gemini API with retry logic
 const callGeminiAPI = async (prompt, retries = 3) => {
+  // Check if API key exists
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'undefined') {
+    throw new Error('GEMINI_API_KEY is not configured. Please add it to your .env file');
+  }
+
   for (let i = 0; i < retries; i++) {
     try {
+      console.log(`🔄 Calling Gemini API (attempt ${i + 1}/${retries})...`);
+      
       const response = await axios.post(GEMINI_API_URL, {
         contents: [{ parts: [{ text: prompt }] }]
       }, {
-        timeout: 30000
+        timeout: 30000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       const text = response.data.candidates[0].content.parts[0].text;
+      console.log('✅ Gemini API call successful');
       return text;
     } catch (error) {
-      if (i === retries - 1) {
-        throw new Error('Gemini API failed after multiple retries');
+      console.error(`❌ Gemini API error (attempt ${i + 1}):`, error.response?.data || error.message);
+      
+      // Log detailed error information
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Data:', JSON.stringify(error.response.data, null, 2));
       }
+      
+      if (i === retries - 1) {
+        // Provide more helpful error message
+        if (error.response?.status === 400) {
+          throw new Error(`Gemini API error: ${error.response.data.error?.message || 'Invalid request. Check your API key and request format.'}`);
+        } else if (error.response?.status === 403) {
+          throw new Error('Gemini API key is invalid or doesn\'t have permission. Please check your GEMINI_API_KEY in .env file');
+        } else if (error.response?.status === 429) {
+          throw new Error('Gemini API rate limit exceeded. Please try again later');
+        } else {
+          throw new Error(`Gemini API failed: ${error.response?.data?.error?.message || error.message}`);
+        }
+      }
+      
+      // Wait before retry
       await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
     }
   }

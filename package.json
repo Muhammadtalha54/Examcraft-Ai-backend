@@ -1,12 +1,11 @@
 {
   "name": "examcraft-ai-backend",
   "version": "1.0.0",
-  "description": "ExamCraft AI Backend - Serverless API for content generation and authentication",
-  "main": "index.js",
+  "description": "ExamCraft AI Backend - API for content generation and authentication",
+  "main": "server.js",
   "scripts": {
-    "dev": "vercel dev",
-    
-    "deploy": "vercel"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
     "axios": "^1.5.0",
@@ -25,8 +24,8 @@
     "examcraft",
     "ai",
     "backend",
-    "serverless",
-    "vercel"
+    "express",
+    "render"
   ],
   "author": "ExamCraft AI Team",
   "license": "MIT"
