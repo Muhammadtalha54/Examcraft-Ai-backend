@@ -26,8 +26,11 @@ const registerUser = async (email, password) => {
   const user = new User({ email, password: hashedPassword });
   await user.save();
 
+  // Send verification email in background (non-blocking)
   const emailToken = generateEmailToken(email);
-  await sendVerificationEmail(email, emailToken);
+  sendVerificationEmail(email, emailToken).catch(err => {
+    console.error('Failed to send verification email:', err.message);
+  });
 
   return user;
 };
@@ -100,11 +103,16 @@ const verifyEmail = async (token) => {
 const forgotPassword = async (email) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new Error('No account found with that email address');
+    // Don't reveal if user exists or not (security best practice)
+    return { message: 'If an account exists, reset email sent' };
   }
 
   const resetToken = generateEmailToken(email);
-  await sendPasswordResetEmail(email, resetToken);
+  
+  // Send email in background (non-blocking)
+  sendPasswordResetEmail(email, resetToken).catch(err => {
+    console.error('Failed to send password reset email:', err.message);
+  });
   
   return { message: 'Password reset email sent' };
 };

@@ -17,7 +17,10 @@ exports.signup = async (req, res) => {
     }
     
     const result = await registerUser(email, password);
+    
+    // Send response immediately, don't wait for email
     res.status(201).json(successResponse('User created successfully. Please check your email for verification.', result));
+    
   } catch (error) {
     res.status(400).json(errorResponse(error.message));
   }
@@ -165,8 +168,13 @@ exports.forgotPassword = async (req, res) => {
     }
     
     const { forgotPassword } = require('../services/authService');
-    await forgotPassword(email);
-    res.status(200).json(successResponse('Password reset email sent. Please check your inbox.'));
+    
+    // Send email in background, don't wait for it
+    forgotPassword(email).catch(err => console.error('Email sending error:', err));
+    
+    // Respond immediately
+    res.status(200).json(successResponse('If an account exists with that email, a password reset link has been sent.'));
+    
   } catch (error) {
     res.status(400).json(errorResponse(error.message));
   }
