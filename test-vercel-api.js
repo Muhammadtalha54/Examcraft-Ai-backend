@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const BASE_URL = 'https://y-nmqq2opmn-talha03366987154-gmailcoms-projects.vercel.app';
+const BASE_URL = 'http://localhost:3001';
 
 // Test functions
 async function testAPI() {
@@ -43,7 +43,7 @@ async function testAPI() {
   // Test 4: MCQ Generation
   try {
     console.log('\n4. Testing MCQ generation...');
-    const response = await axios.post(`${BASE_URL}/api/generate/mcq`, {
+    const response = await axios.post(`${BASE_URL}/api/generate/mcq-text`, {
       content: 'JavaScript is a programming language used for web development.',
       difficulty: 'medium',
       count: 2

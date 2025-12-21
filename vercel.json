@@ -1,13 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "api/**/*.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/api/auth/(.*)", "dest": "/api/auth/$1" },
-    { "src": "/api/generate/(.*)", "dest": "/api/generate/$1" },
-    { "src": "/api/info/(.*)", "dest": "/api/info/$1" },
-    { "src": "/api/test/(.*)", "dest": "/api/test/$1" },
-    { "src": "/api/(.*)", "dest": "/api/$1" }
-  ]
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
