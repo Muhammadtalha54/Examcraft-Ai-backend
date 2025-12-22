@@ -16,14 +16,14 @@ const createTransporter = () => {
 };
 
 // Register new user with email verification
-const registerUser = async (email, password) => {
+const registerUser = async (name, email, password) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new Error('Email already registered');
   }
 
   const hashedPassword = await bcrypt.hash(password, 12);
-  const user = new User({ email, password: hashedPassword });
+  const user = new User({ name, email, password: hashedPassword });
   await user.save();
 
   // Send verification email in background (non-blocking)
@@ -78,7 +78,7 @@ const loginUser = async (email, password) => {
   }
 
   const token = generateToken(user._id);
-  return { token, user: { email: user.email } };
+  return { token, user: { name: user.name, email: user.email } };
 };
 
 // Verify email with token

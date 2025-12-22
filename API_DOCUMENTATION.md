@@ -32,6 +32,7 @@ https://your-app-name.onrender.com
 **Request Body:**
 ```json
 {
+  "name": "John Doe",
   "email": "user@example.com",
   "password": "securePassword123"
 }
@@ -44,6 +45,7 @@ https://your-app-name.onrender.com
   "message": "User created successfully. Please check your email for verification.",
   "data": {
     "_id": "user_id_here",
+    "name": "John Doe",
     "email": "user@example.com",
     "isVerified": false
   }
@@ -97,6 +99,7 @@ curl -X POST http://localhost:3000/api/auth/signup \
   "data": {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
+      "name": "John Doe",
       "email": "user@example.com"
     }
   }
@@ -622,11 +625,11 @@ class ExamCraftAPI {
   static const String baseUrl = 'http://localhost:3000/api';
   
   // Signup
-  static Future<Map<String, dynamic>> signup(String email, String password) async {
+  static Future<Map<String, dynamic>> signup(String name, String email, String password) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/signup'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
+      body: jsonEncode({'name': name, 'email': email, 'password': password}),
     );
     return jsonDecode(response.body);
   }

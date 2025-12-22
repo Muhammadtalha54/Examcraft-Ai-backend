@@ -6,17 +6,17 @@ const { successResponse, errorResponse } = require('../utils/responseFormatter')
 exports.signup = async (req, res) => {
   await connectDB();
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
     
-    if (!email || !password) {
-      return res.status(400).json(errorResponse('Email and password are required'));
+    if (!name || !email || !password) {
+      return res.status(400).json(errorResponse('Name, email and password are required'));
     }
     
     if (!isValidEmail(email)) {
       return res.status(400).json(errorResponse('Please provide a valid email address'));
     }
     
-    const result = await registerUser(email, password);
+    const result = await registerUser(name, email, password);
     
     // Send response immediately, don't wait for email
     res.status(201).json(successResponse('User created successfully. Please check your email for verification.', result));
