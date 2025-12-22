@@ -173,11 +173,15 @@ curl -X POST http://localhost:3000/api/auth/verify-email \
 
 ## ✨ Content Generation APIs
 
+> **NEW:** All generation endpoints now support PDF file uploads! You can either send text content OR upload a PDF file.
+
 ### 4. Generate MCQs
 
 **Endpoint:** `POST /api/generate/mcq`
 
-**Description:** Generate multiple choice questions from provided content.
+**Description:** Generate multiple choice questions from provided content or PDF file.
+
+#### Option 1: Text Content
 
 **Headers:**
 ```json
@@ -195,10 +199,44 @@ curl -X POST http://localhost:3000/api/auth/verify-email \
 }
 ```
 
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/generate/mcq \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Photosynthesis is the process by which plants convert light energy into chemical energy.",
+    "count": 3,
+    "difficulty": "medium"
+  }'
+```
+
+#### Option 2: PDF File Upload
+
+**Headers:**
+```
+Content-Type: multipart/form-data
+```
+
+**Form Data:**
+- `file`: PDF file (required)
+- `count`: Number of questions (optional, default: 5)
+- `difficulty`: easy/medium/hard (optional, default: medium)
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/generate/mcq \
+  -F "file=@/path/to/document.pdf" \
+  -F "count=5" \
+  -F "difficulty=medium"
+```
+
 **Parameters:**
-- `content` (string, required): The study material to generate questions from
+- `content` (string, optional*): The study material to generate questions from
+- `file` (PDF file, optional*): PDF file to extract text from
 - `count` (integer, optional): Number of questions (default: 5)
 - `difficulty` (string, optional): "easy", "medium", or "hard" (default: "medium")
+
+*Either `content` OR `file` must be provided
 
 **Success Response (200):**
 ```json
@@ -226,20 +264,9 @@ curl -X POST http://localhost:3000/api/auth/verify-email \
 ```json
 {
   "success": false,
-  "message": "Content is required",
+  "message": "Either content or PDF file is required",
   "data": null
 }
-```
-
-**cURL Example:**
-```bash
-curl -X POST http://localhost:3000/api/generate/mcq \
-  -H "Content-Type: application/json" \
-  -d '{
-    "content": "Photosynthesis is the process by which plants convert light energy into chemical energy.",
-    "count": 3,
-    "difficulty": "medium"
-  }'
 ```
 
 ---
