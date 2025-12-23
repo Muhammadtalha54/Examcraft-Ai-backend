@@ -6,13 +6,21 @@ const { generateToken, generateEmailToken, verifyToken } = require('../utils/tok
 
 // Create email transporter for sending emails
 const createTransporter = () => {
-  return nodemailer.createTransport({
-    service: 'gmail',
+  const config = {
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASS
+    },
+    tls: {
+      rejectUnauthorized: false
     }
-  });
+  };
+  
+  console.log('📧 Email config:', { user: EMAIL_USER, hasPassword: !!EMAIL_PASS });
+  return nodemailer.createTransport(config);
 };
 
 // Register new user with email verification
@@ -37,28 +45,40 @@ const registerUser = async (name, email, password) => {
 
 // Send verification email to user
 const sendVerificationEmail = async (email, token) => {
-  const transporter = createTransporter();
-  
-  // Use production URL for Render, localhost for development
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://examcraft-ai-backend.onrender.com'
-    : 'http://localhost:3000';
-  
-  const verifyUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
+  try {
+    const transporter = createTransporter();
+    
+    // Verify transporter configuration
+    await transporter.verify();
+    console.log('✅ Email server connection verified');
+    
+    // Use production URL for Render, localhost for development
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://examcraft-ai-backend.onrender.com'
+      : 'http://localhost:3000';
+    
+    const verifyUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
 
-  await transporter.sendMail({
-    from: '"ExamCraft AI" <' + EMAIL_USER + '>',
-    to: email,
-    subject: 'Welcome to ExamCraft AI - Verify Your Email',
-    html: `
-      <h2>Welcome to ExamCraft AI!</h2>
-      <p>Please click the link below to verify your email address:</p>
-      <a href="${verifyUrl}">Verify Email</a>
-      <p>Or copy and paste this URL into your browser:</p>
-      <p>${verifyUrl}</p>
-      <p>This link expires in 24 hours.</p>
-    `
-  });
+    const info = await transporter.sendMail({
+      from: '"ExamCraft AI" <' + EMAIL_USER + '>',
+      to: email,
+      subject: 'Welcome to ExamCraft AI - Verify Your Email',
+      html: `
+        <h2>Welcome to ExamCraft AI!</h2>
+        <p>Please click the link below to verify your email address:</p>
+        <a href="${verifyUrl}">Verify Email</a>
+        <p>Or copy and paste this URL into your browser:</p>
+        <p>${verifyUrl}</p>
+        <p>This link expires in 24 hours.</p>
+      `
+    });
+    
+    console.log('✅ Verification email sent:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('❌ Failed to send verification email:', error.message);
+    throw error;
+  }
 };
 
 // Login user with credentials
@@ -119,30 +139,38 @@ const forgotPassword = async (email) => {
 
 // Send password reset email
 const sendPasswordResetEmail = async (email, token) => {
-  const transporter = createTransporter();
-  
-  // Use production URL for Render, localhost for development
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://examcraft-ai-backend.onrender.com'
-    : 'http://localhost:3000';
-  
-  const resetUrl = `${baseUrl}/api/auth/reset-password?token=${token}`;
+  try {
+    const transporter = createTransporter();
+    
+    // Use production URL for Render, localhost for development
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://examcraft-ai-backend.onrender.com'
+      : 'http://localhost:3000';
+    
+    const resetUrl = `${baseUrl}/api/auth/reset-password?token=${token}`;
 
-  await transporter.sendMail({
-    from: '"ExamCraft AI" <' + EMAIL_USER + '>',
-    to: email,
-    subject: 'Reset Your Password - ExamCraft AI',
-    html: `
-      <h2>Password Reset Request</h2>
-      <p>You requested to reset your password for ExamCraft AI.</p>
-      <p>Click the link below to reset your password:</p>
-      <a href="${resetUrl}">Reset Password</a>
-      <p>Or copy and paste this URL into your browser:</p>
-      <p>${resetUrl}</p>
-      <p>This link expires in 24 hours.</p>
-      <p>If you didn't request this, please ignore this email.</p>
-    `
-  });
+    const info = await transporter.sendMail({
+      from: '"ExamCraft AI" <' + EMAIL_USER + '>',
+      to: email,
+      subject: 'Reset Your Password - ExamCraft AI',
+      html: `
+        <h2>Password Reset Request</h2>
+        <p>You requested to reset your password for ExamCraft AI.</p>
+        <p>Click the link below to reset your password:</p>
+        <a href="${resetUrl}">Reset Password</a>
+        <p>Or copy and paste this URL into your browser:</p>
+        <p>${resetUrl}</p>
+        <p>This link expires in 24 hours.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `
+    });
+    
+    console.log('✅ Password reset email sent:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('❌ Failed to send password reset email:', error.message);
+    throw error;
+  }
 };
 
 // Reset password with token
