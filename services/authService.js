@@ -36,9 +36,16 @@ const registerUser = async (name, email, password) => {
 
   // Send verification email in background (non-blocking)
   const emailToken = generateEmailToken(email);
-  sendVerificationEmail(email, emailToken).catch(err => {
-    console.error('Failed to send verification email:', err.message);
-  });
+  console.log('🚀 Attempting to send verification email to:', email);
+  sendVerificationEmail(email, emailToken)
+    .then(() => {
+      console.log('✅ Verification email sent successfully to:', email);
+    })
+    .catch(err => {
+      console.error('❌ Failed to send verification email to:', email);
+      console.error('Error details:', err.message);
+      console.error('Full error:', err);
+    });
 
   return user;
 };
@@ -59,21 +66,22 @@ const sendVerificationEmail = async (email, token) => {
     
     const verifyUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
 
-    const info = await transporter.sendMail({
-      from: '"ExamCraft AI" <' + EMAIL_USER + '>',
-      to: email,
-      subject: 'Welcome to ExamCraft AI - Verify Your Email',
-      html: `
-        <h2>Welcome to ExamCraft AI!</h2>
-        <p>Please click the link below to verify your email address:</p>
-        <a href="${verifyUrl}">Verify Email</a>
-        <p>Or copy and paste this URL into your browser:</p>
-        <p>${verifyUrl}</p>
-        <p>This link expires in 24 hours.</p>
-      `
-    });
-    
-    console.log('✅ Verification email sent:', info.messageId);
+    try {
+      const info = await transporter.sendMail({
+        from: `"ExamCraft AI" <${process.env.EMAIL_USER}>`,
+        to: email, // talha89@yopmail.com
+        subject: "Verify your account",
+        html: "<h2>Test Email</h2>",
+      });
+
+      console.log("✅ MAIL SENT:", info.response);
+      return info;
+    } catch (error) {
+      console.log("❌ MAIL SEND FAILED:");
+      console.log(error);          // FULL error
+      console.log(error.message);  // readable error
+      throw error;
+    }
     return info;
   } catch (error) {
     console.error('❌ Failed to send verification email:', error.message);
@@ -130,9 +138,16 @@ const forgotPassword = async (email) => {
   const resetToken = generateEmailToken(email);
   
   // Send email in background (non-blocking)
-  sendPasswordResetEmail(email, resetToken).catch(err => {
-    console.error('Failed to send password reset email:', err.message);
-  });
+  console.log('🚀 Attempting to send password reset email to:', email);
+  sendPasswordResetEmail(email, resetToken)
+    .then(() => {
+      console.log('✅ Password reset email sent successfully to:', email);
+    })
+    .catch(err => {
+      console.error('❌ Failed to send password reset email to:', email);
+      console.error('Error details:', err.message);
+      console.error('Full error:', err);
+    });
   
   return { message: 'Password reset email sent' };
 };
